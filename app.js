@@ -6,8 +6,12 @@ var mongoose = require('mongoose');
 // Inicializar variables
 var app = express();
 
+// Importar rutas
+var appRoutes = require('./routes/app');
+var userRoutes = require('./routes/user');
+
 // Conexión a la bd
-mongoose.connection.openUri('mongodb://localhost:27017/hospitalDB', { useNewUrlParser: true }, (err, res) => {
+mongoose.connection.openUri('mongodb://localhost:27017/hospitalDB', { useNewUrlParser: true, useCreateIndex: true }, (err, res) => {
     if (err) {
         throw err;
     }
@@ -17,12 +21,9 @@ mongoose.connection.openUri('mongodb://localhost:27017/hospitalDB', { useNewUrlP
 
 
 // Rutas
-app.get('/', (req, res, next) => {
-    res.status(200).json({
-        ok: true,
-        message: 'Petición realizada correctamente'
-    });
-});
+app.use('/user', userRoutes);
+app.use('/', appRoutes);
+
 
 // Escuchar peticiones
 app.listen(3000, () => {
