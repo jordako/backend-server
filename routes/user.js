@@ -1,5 +1,8 @@
 var express = require('express');
 var bcrypt = require('bcryptjs');
+var jwt = require('jsonwebtoken');
+
+var mdAuth = require('../middlewares/auth');
 
 var app = express();
 
@@ -30,7 +33,7 @@ app.get('/', (req, res, next) => {
 // ==========================================
 // Actualizar usuario
 // ==========================================
-app.put('/:id', (req, res) => {
+app.put('/:id', mdAuth.verifyToken, (req, res) => {
   var id = req.params.id;
   var body = req.body;
 
@@ -69,7 +72,8 @@ app.put('/:id', (req, res) => {
 
       res.status(200).json({
         ok: true,
-        user: savedUser
+        user: savedUser,
+        userToken: req.user
       });
     });
 
@@ -81,7 +85,7 @@ app.put('/:id', (req, res) => {
 // ==========================================
 // Crear un nuevo usuario
 // ==========================================
-app.post('/', (req, res) => {
+app.post('/', mdAuth.verifyToken, (req, res) => {
   var body = req.body;
 
   var user = new User({
@@ -103,7 +107,8 @@ app.post('/', (req, res) => {
 
     res.status(201).json({
       ok: true,
-      user: savedUser
+      user: savedUser,
+      userToken: req.user
     });
   });
 });
@@ -112,7 +117,7 @@ app.post('/', (req, res) => {
 // ==========================================
 // Borrar un usuario
 // ==========================================
-app.delete('/:id', (req, res) => {
+app.delete('/:id', mdAuth.verifyToken, (req, res) => {
   var id = req.params.id;
 
   User.findByIdAndDelete(id, (err, deletedUser) => {
@@ -134,7 +139,8 @@ app.delete('/:id', (req, res) => {
 
     res.status(200).json({
       ok: true,
-      user: deletedUser
+      user: deletedUser,
+      userToken: req.user
     });
   });
 });
