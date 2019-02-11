@@ -14,7 +14,7 @@ var userSchema = new Schema({
     email: { type: String, unique: true, required: [true, 'El correo es necesario'] },
     password: { type: String, required: [true, 'La constraseña es necesaria'] },
     img: { type: String, required: false },
-    role: { type: String, required: true, default: 'USER_ROLE', enum: validRoles }
+    role: { type: String, required: [true, 'El rol es necesario'], default: 'USER_ROLE', enum: validRoles }
 
 });
 
