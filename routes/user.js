@@ -9,21 +9,21 @@ var User = require('../models/user');
 // Obtener todos los usuarios
 // ==========================================
 app.get('/', (req, res, next) => {
-    User.find({}, 'name email img role')
-        .exec((err, users) => {
-            if (err) {
-                return res.status(500).json({
-                    ok: false,
-                    message: 'Error cargando usuarios',
-                    errors: err
-                });
-            }
-
-            res.status(200).json({
-                ok: true,
-                users: users
-            });
+  User.find({}, 'name email img role')
+    .exec((err, users) => {
+      if (err) {
+        return res.status(500).json({
+          ok: false,
+          message: 'Error cargando usuarios',
+          errors: err
         });
+      }
+
+      res.status(200).json({
+        ok: true,
+        users: users
+      });
+    });
 });
 
 
@@ -31,49 +31,49 @@ app.get('/', (req, res, next) => {
 // Actualizar usuario
 // ==========================================
 app.put('/:id', (req, res) => {
-    var id = req.params.id;
-    var body = req.body;
+  var id = req.params.id;
+  var body = req.body;
 
-    User.findById(id, (err, user) => {
+  User.findById(id, (err, user) => {
 
-        if (err) {
-            return res.status(500).json({
-                ok: false,
-                message: 'Error al buscar usuario',
-                errors: err
-            });
-        }
+    if (err) {
+      return res.status(500).json({
+        ok: false,
+        message: 'Error al buscar usuario',
+        errors: err
+      });
+    }
 
-        if (!user) {
-            return res.status(400).json({
-                ok: false,
-                message: 'El usuario con el id ' + id + ' no existe',
-                errors: { message: 'No existe un usuario con ese ID' }
-            });
-        }
+    if (!user) {
+      return res.status(400).json({
+        ok: false,
+        message: 'El usuario con el id ' + id + ' no existe',
+        errors: { message: 'No existe un usuario con ese ID' }
+      });
+    }
 
-        user.name = body.name;
-        user.email = body.email;
-        user.role = body.role;
+    user.name = body.name;
+    user.email = body.email;
+    user.role = body.role;
 
-        user.save((err, savedUser) => {
-            if (err) {
-                return res.status(400).json({
-                    ok: false,
-                    message: 'Error al actualizar usuario',
-                    errors: err
-                });
-            }
-
-            savedUser.password = ':)';
-
-            res.status(200).json({
-                ok: true,
-                user: savedUser
-            });
+    user.save((err, savedUser) => {
+      if (err) {
+        return res.status(400).json({
+          ok: false,
+          message: 'Error al actualizar usuario',
+          errors: err
         });
+      }
 
+      savedUser.password = ':)';
+
+      res.status(200).json({
+        ok: true,
+        user: savedUser
+      });
     });
+
+  });
 
 });
 
@@ -82,30 +82,62 @@ app.put('/:id', (req, res) => {
 // Crear un nuevo usuario
 // ==========================================
 app.post('/', (req, res) => {
-    var body = req.body;
+  var body = req.body;
 
-    var user = new User({
-        name: body.name,
-        email: body.email,
-        password: bcrypt.hashSync(body.password, 10),
-        img: body.img,
-        role: body.role
+  var user = new User({
+    name: body.name,
+    email: body.email,
+    password: bcrypt.hashSync(body.password, 10),
+    img: body.img,
+    role: body.role
+  });
+
+  user.save((err, savedUser) => {
+    if (err) {
+      return res.status(400).json({
+        ok: false,
+        message: 'Error al crear usuario',
+        errors: err
+      });
+    }
+
+    res.status(201).json({
+      ok: true,
+      user: savedUser
     });
-
-    user.save((err, savedUser) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                message: 'Error al crear usuario',
-                errors: err
-            });
-        }
-
-        res.status(201).json({
-            ok: true,
-            user: savedUser
-        });
-    });
+  });
 });
+
+
+// ==========================================
+// Borrar un usuario
+// ==========================================
+app.delete('/:id', (req, res) => {
+  var id = req.params.id;
+
+  User.findByIdAndDelete(id, (err, deletedUser) => {
+    if (err) {
+      return res.status(500).json({
+        ok: false,
+        message: 'Error al borrar usuario',
+        errors: err
+      });
+    }
+
+    if (!deletedUser) {
+      return res.status(400).json({
+        ok: false,
+        message: 'El usuario con el id ' + id + ' no existe',
+        errors: { message: 'No existe un usuario con ese ID' }
+      });
+    }
+
+    res.status(200).json({
+      ok: true,
+      user: deletedUser
+    });
+  });
+});
+
 
 module.exports = app;
