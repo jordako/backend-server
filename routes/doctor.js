@@ -10,19 +10,32 @@ var Doctor = require('../models/doctor');
 // Obtener todos los médicos
 // ==========================================
 app.get('/', (req, res) => {
-    Doctor.find({}, (err, doctors) => {
-        if (err) {
-            return res.status(500).json({
-                ok: false,
-                message: 'Error cargando médicos',
-                errors: err
-            });
-        }
 
-        res.status(200).json({
-            ok: true,
-            doctors: doctors
+  var from = req.query.from || 0;
+  from = Number(from);
+
+  Doctor.find({})
+    .populate('user', 'name email')
+    .populate('hospital')
+    .skip(from)
+    .limit(5)
+    .exec((err, doctors) => {
+      if (err) {
+        return res.status(500).json({
+          ok: false,
+          message: 'Error cargando médicos',
+          errors: err
         });
+      }
+
+      Doctor.count({}, (err, count) => {
+        res.status(200).json({
+          ok: true,
+          doctors: doctors,
+          total: count
+        });
+      });
+
     });
 });
 
@@ -31,47 +44,47 @@ app.get('/', (req, res) => {
 // Actualizar médico
 // ==========================================
 app.put('/:id', mdAuth.verifyToken, (req, res) => {
-    var id = req.params.id;
-    var body = req.body;
+  var id = req.params.id;
+  var body = req.body;
 
-    Doctor.findById(id, (err, doctor) => {
+  Doctor.findById(id, (err, doctor) => {
 
-        if (err) {
-            return res.status(500).json({
-                ok: false,
-                message: 'Error al buscar médico',
-                errors: err
-            });
-        }
+    if (err) {
+      return res.status(500).json({
+        ok: false,
+        message: 'Error al buscar médico',
+        errors: err
+      });
+    }
 
-        if (!doctor) {
-            return res.status(400).json({
-                ok: false,
-                message: 'El médico con el id ' + id + ' no existe',
-                errors: { message: 'No existe un médico con ese ID' }
-            });
-        }
+    if (!doctor) {
+      return res.status(400).json({
+        ok: false,
+        message: 'El médico con el id ' + id + ' no existe',
+        errors: { message: 'No existe un médico con ese ID' }
+      });
+    }
 
-        doctor.name = body.name;
-        doctor.user = req.user._id;
-        doctor.hospital = body.hospital;
+    doctor.name = body.name;
+    doctor.user = req.user._id;
+    doctor.hospital = body.hospital;
 
-        doctor.save((err, savedDoctor) => {
-            if (err) {
-                return res.status(400).json({
-                    ok: false,
-                    message: 'Error al actualizar médico',
-                    errors: err
-                });
-            }
-
-            res.status(200).json({
-                ok: true,
-                doctor: savedDoctor
-            });
+    doctor.save((err, savedDoctor) => {
+      if (err) {
+        return res.status(400).json({
+          ok: false,
+          message: 'Error al actualizar médico',
+          errors: err
         });
+      }
 
+      res.status(200).json({
+        ok: true,
+        doctor: savedDoctor
+      });
     });
+
+  });
 
 });
 
@@ -80,28 +93,28 @@ app.put('/:id', mdAuth.verifyToken, (req, res) => {
 // Crear un nuevo médico
 // ==========================================
 app.post('/', mdAuth.verifyToken, (req, res) => {
-    var body = req.body;
+  var body = req.body;
 
-    var doctor = new Doctor({
-        name: body.name,
-        user: req.user._id,
-        hospital: body.hospital
+  var doctor = new Doctor({
+    name: body.name,
+    user: req.user._id,
+    hospital: body.hospital
+  });
+
+  doctor.save((err, savedDoctor) => {
+    if (err) {
+      return res.status(400).json({
+        ok: false,
+        message: 'Error al crear médico',
+        errors: err
+      });
+    }
+
+    res.status(201).json({
+      ok: true,
+      doctor: savedDoctor
     });
-
-    doctor.save((err, savedDoctor) => {
-        if (err) {
-            return res.status(400).json({
-                ok: false,
-                message: 'Error al crear médico',
-                errors: err
-            });
-        }
-
-        res.status(201).json({
-            ok: true,
-            doctor: savedDoctor
-        });
-    });
+  });
 });
 
 
@@ -109,30 +122,30 @@ app.post('/', mdAuth.verifyToken, (req, res) => {
 // Borrar un médico
 // ==========================================
 app.delete('/:id', mdAuth.verifyToken, (req, res) => {
-    var id = req.params.id;
+  var id = req.params.id;
 
-    Doctor.findByIdAndDelete(id, (err, deletedDoctor) => {
-        if (err) {
-            return res.status(500).json({
-                ok: false,
-                message: 'Error al borrar médico',
-                errors: err
-            });
-        }
+  Doctor.findByIdAndDelete(id, (err, deletedDoctor) => {
+    if (err) {
+      return res.status(500).json({
+        ok: false,
+        message: 'Error al borrar médico',
+        errors: err
+      });
+    }
 
-        if (!deletedDoctor) {
-            return res.status(400).json({
-                ok: false,
-                message: 'El médico con el id ' + id + ' no existe',
-                errors: { message: 'No existe un médico con ese ID' }
-            });
-        }
+    if (!deletedDoctor) {
+      return res.status(400).json({
+        ok: false,
+        message: 'El médico con el id ' + id + ' no existe',
+        errors: { message: 'No existe un médico con ese ID' }
+      });
+    }
 
-        res.status(200).json({
-            ok: true,
-            doctor: deletedDoctor
-        });
+    res.status(200).json({
+      ok: true,
+      doctor: deletedDoctor
     });
+  });
 });
 
 
