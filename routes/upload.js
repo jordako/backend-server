@@ -64,11 +64,6 @@ app.put('/:type/:id', (req, res) => {
         }
 
         uploadByType(type, id, fileName, res);
-
-        // res.status(200).json({
-        //   ok: true,
-        //   message: 'Archivo subido'
-        // });
     });
 
 });
@@ -76,6 +71,15 @@ app.put('/:type/:id', (req, res) => {
 function uploadByType(type, id, fileName, res) {
     if (type === 'users') {
         User.findById(id, (err, user) => {
+
+            if (!user) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Usuario no existe',
+                    errors: { message: 'Usuario no existe ' }
+                });
+            }
+
             var oldPath = './uploads/users/' + user.img;
 
             // Si existe, la eliminamos
@@ -85,6 +89,9 @@ function uploadByType(type, id, fileName, res) {
 
             user.img = fileName;
             user.save((err, updatedUser) => {
+
+                updatedUser.password = ':)';
+
                 return res.status(200).json({
                     ok: true,
                     message: 'Imagen de usuario actualizada',
@@ -95,11 +102,61 @@ function uploadByType(type, id, fileName, res) {
     }
 
     if (type === 'doctors') {
+        Doctor.findById(id, (err, doctor) => {
 
+            if (!doctor) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Médico no existe',
+                    errors: { message: 'Médico no existe ' }
+                });
+            }
+
+            var oldPath = './uploads/doctors/' + doctor.img;
+
+            // Si existe, la eliminamos
+            if (fs.existsSync(oldPath)) {
+                fs.unlinkSync(oldPath);
+            }
+
+            doctor.img = fileName;
+            doctor.save((err, updatedDoctor) => {
+                return res.status(200).json({
+                    ok: true,
+                    message: 'Imagen de médico actualizada',
+                    doctor: updatedDoctor
+                });
+            });
+        });
     }
 
     if (type === 'hospitals') {
+        Hospital.findById(id, (err, hospital) => {
 
+            if (!hospital) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'Hospital no existe',
+                    errors: { message: 'Hospital no existe ' }
+                });
+            }
+
+            var oldPath = './uploads/hospitals/' + hospital.img;
+
+            // Si existe, la eliminamos
+            if (fs.existsSync(oldPath)) {
+                fs.unlinkSync(oldPath);
+            }
+
+            hospital.img = fileName;
+            hospital.save((err, updatedHospital) => {
+                return res.status(200).json({
+                    ok: true,
+                    message: 'Imagen de hospital actualizada',
+                    hospital: updatedHospital
+                });
+            });
+        });
     }
 }
 
