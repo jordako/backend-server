@@ -1,4 +1,10 @@
-/node_modules
-/uploads/doctors/*
-/uploads/hospitals/*
-/uploads/users/*
+node_modules
+
+uploads/doctors/*
+!uploads/doctors/.gitkeep 
+
+uploads/hospitals/*
+!uploads/hospitals/.gitkeep 
+
+uploads/users/*
+!uploads/hospitals/.gitkeep 
