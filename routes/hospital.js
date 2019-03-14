@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
   from = Number(from);
 
   Hospital.find({})
-    .populate('user', 'name email')
+    .populate('user', 'name img email')
     .skip(from)
     .limit(5)
     .exec((err, hospitals) => {
@@ -35,6 +35,39 @@ app.get('/', (req, res) => {
         });
       });
 
+    });
+});
+
+// ==========================================
+// Obtener Hospital por ID
+// ==========================================
+app.get('/:id', (req, res) => {
+
+  var id = req.params.id;
+
+  Hospital.findById(id)
+    .populate('user', 'name img email')
+    .exec((err, hospital) => {
+      if (err) {
+        return res.status(500).json({
+          ok: false,
+          message: 'Error al buscar hospital',
+          errors: err
+        });
+      }
+
+      if (!hospital) {
+        return res.status(400).json({
+          ok: false,
+          message: 'El hospital con el id ' + id + 'no existe',
+          errors: { message: 'No existe un hospital con ese ID' }
+        });
+      }
+
+      res.status(200).json({
+        ok: true,
+        hospital: hospital
+      });
     });
 });
 
