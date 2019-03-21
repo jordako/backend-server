@@ -14,10 +14,13 @@ app.get('/', (req, res) => {
   var from = req.query.from || 0;
   from = Number(from);
 
+  var limit = req.query.limit || 0;
+  limit = Number(limit);
+
   Hospital.find({})
     .populate('user', 'name img email')
     .skip(from)
-    .limit(5)
+    .limit(limit)
     .exec((err, hospitals) => {
       if (err) {
         return res.status(500).json({

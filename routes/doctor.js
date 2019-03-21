@@ -14,11 +14,14 @@ app.get('/', (req, res) => {
   var from = req.query.from || 0;
   from = Number(from);
 
+  var limit = req.query.limit || 0;
+  limit = Number(limit);
+
   Doctor.find({})
     .populate('user', 'name email')
     .populate('hospital')
     .skip(from)
-    .limit(5)
+    .limit(limit)
     .exec((err, doctors) => {
       if (err) {
         return res.status(500).json({
@@ -36,6 +39,41 @@ app.get('/', (req, res) => {
         });
       });
 
+    });
+});
+
+
+// ==========================================
+// Obtener Médico por ID
+// ==========================================
+app.get('/:id', (req, res) => {
+
+  var id = req.params.id;
+
+  Doctor.findById(id)
+    .populate('user', 'name email img')
+    .populate('hospital')
+    .exec((err, doctor) => {
+      if (err) {
+        return res.status(500).json({
+          ok: false,
+          message: 'Error al buscar médico',
+          errors: err
+        });
+      }
+
+      if (!doctor) {
+        return res.status(400).json({
+          ok: false,
+          message: 'El médico con el id ' + id + 'no existe',
+          errors: { message: 'No existe un médico con ese ID' }
+        });
+      }
+
+      res.status(200).json({
+        ok: true,
+        doctor: doctor
+      });
     });
 });
 
@@ -67,7 +105,7 @@ app.put('/:id', mdAuth.verifyToken, (req, res) => {
 
     doctor.name = body.name;
     doctor.user = req.user._id;
-    doctor.hospital = body.hospital;
+    doctor.hospital = body.hospitalId;
 
     doctor.save((err, savedDoctor) => {
       if (err) {
@@ -98,7 +136,7 @@ app.post('/', mdAuth.verifyToken, (req, res) => {
   var doctor = new Doctor({
     name: body.name,
     user: req.user._id,
-    hospital: body.hospital
+    hospital: body.hospitalId
   });
 
   doctor.save((err, savedDoctor) => {
