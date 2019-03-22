@@ -62,7 +62,8 @@ app.post('/google', async(req, res) => {
       if (user.google === false) {
         return res.status(400).json({
           ok: false,
-          message: 'Debe de usar su autenticación normal'
+          message: 'Debe de usar su autenticación normal',
+          errors: { message: 'Debe de usar su autenticación normal' }
         });
       } else {
         var token = jwt.sign({ user: user }, SEED, { expiresIn: 14400 }); // 4 horas
@@ -71,7 +72,8 @@ app.post('/google', async(req, res) => {
           ok: true,
           user: user,
           token: token,
-          id: user._id
+          id: user._id,
+          menu: obtenerMenu(user.role)
         });
       }
 
@@ -100,7 +102,8 @@ app.post('/google', async(req, res) => {
           ok: true,
           user: user,
           token: token,
-          id: user._id
+          id: user._id,
+          menu: obtenerMenu(user.role)
         });
       });
     }
@@ -151,7 +154,8 @@ app.post('/', (req, res) => {
       ok: true,
       user: user,
       token: token,
-      id: user._id
+      id: user._id,
+      menu: obtenerMenu(user.role)
     });
   });
 
@@ -159,5 +163,47 @@ app.post('/', (req, res) => {
 
 });
 
+function obtenerMenu(role) {
+  var menu = [{
+    title: 'Principal',
+    icon: 'mdi mdi-gauge',
+    submenu: [{
+      title: 'Dashboard',
+      url: '/dashboard'
+    }, {
+      title: 'ProgressBar',
+      url: '/progress'
+    }, {
+      title: 'Gráficas',
+      url: '/graphics1'
+    }, {
+      title: 'Promesas',
+      url: '/promises'
+    }, {
+      title: 'RxJs',
+      url: '/rxjs'
+    }]
+  }, {
+    title: 'Mantenimientos',
+    icon: 'mdi mdi-folder-lock-open',
+    submenu: [{
+      title: 'Hospitales',
+      url: '/hospitals'
+    }, {
+      title: 'Médicos',
+      url: '/doctors'
+    }]
+  }];
+
+  if (role === 'ADMIN_ROLE') {
+    menu[1].submenu.unshift({
+      title: 'Usuarios',
+      url: '/users'
+    });
+  }
+
+
+  return menu;
+}
 
 module.exports = app;
